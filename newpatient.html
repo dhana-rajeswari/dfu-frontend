@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CURIS - AI Health Assessment</title>
+    <style>
+        /* --- RESET & BASIC VARIABLES --- */
+        :root {
+            --primary-color: #06b6d4; /* Teal logo color */
+            --primary-dark: #0891b2;
+            --accent-blue: #0ea5e9;   /* Button blue */
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f9fafb;
+            --bg-gradient: linear-gradient(to bottom right, #f0f9ff, #e0f2fe, #f9fafb);
+            
+            /* Risk Colors */
+            --risk-low-bg: #dcfce7;
+            --risk-low-text: #166534;
+            --risk-mod-bg: #fef9c3;
+            --risk-mod-text: #854d0e;
+            --risk-high-bg: #fee2e2;
+            --risk-high-text: #991b1b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        button {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: black;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            background-color: var(--primary-color);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: none; /* Hidden on mobile by default */
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-light);
+            margin: 0 15px;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .btn-header {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .btn-header:hover {
+            background-color: var(--primary-dark);
+        }
+
+        @media (min-width: 768px) {
+            .nav-links { display: block; }
+        }
+
+        /* --- HERO SECTION (NEW) --- */
+        .hero-section {
+            padding: 5rem 0;
+            text-align: center;
+            background: var(--bg-gradient);
+        }
+
+        .tagline-badge {
+            display: inline-block;
+            background-color: #e0f2fe;
+            color: var(--accent-blue);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .text-highlight {
+            color: var(--primary-color);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            max-width: 750px;
+            margin: 0 auto 2.5rem auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 4rem;
+            align-items: center; /* Ensures vertical alignment */
+        }
+
+        .secondary-btn {
+            background-color: white;
+            color: var(--text-main);
+            border: 1px solid #d1d5db;
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            /* FIX: Added flex properties to match the main button's structure for height sync */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .secondary-btn:hover {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .hero-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .hero-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            cursor: pointer; /* Added cursor pointer */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hero-card:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .hero-card-icon {
+            width: 48px;
+            height: 48px;
+            background-color: #e0f2fe;
+            color: var(--accent-blue);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .hero-card-content h3 {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+        }
+
+        .hero-card-content p {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        @media (max-width: 640px) {
+            .hero-title { font-size: 2.2rem; }
+            .hero-buttons { flex-direction: column; }
+            .hero-card { flex-direction: column; text-align: center; }
+        }
+
+
+        /* --- FEATURES SECTION --- */
+        .features-section {
+            padding: 4rem 0;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            border: 1px solid #e5e7eb;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .icon-blue { background: #e0f2fe; color: var(--accent-blue); }
+        .icon-teal { background: #ccfbf1; color: var(--primary-color); }
+        
+        .card h3 {
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+
+        /* --- RISK LEVELS SECTION --- */
+        .risk-section {
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .section-subtitle {
+            color: var(--text-light);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            text-align: left;
+        }
+
+        .risk-card {
+            padding: 2.5rem;
+            border-radius: 16px;
+        }
+
+        .risk-card h3 {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .risk-card p {
+            color: #4b5563;
+            margin-bottom: 2rem;
+            min-height: 80px; /* Aligns buttons */
+        }
+
+        .risk-btn {
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        /* Low Risk Styling */
+        .bg-low { background-color: var(--risk-low-bg); }
+        .icon-low { color: var(--risk-low-text); background: rgba(255,255,255,0.5); width: 48px; height: 48px; border-radius: 50%; display:flex; align-items:center; justify-content:center;}
+        .btn-low { color: var(--risk-low-text); border-color: var(--risk-low-text); }
+        .btn-low:hover { background: var(--risk-low-text); color: white; }
+
+        /* Moderate Risk Styling */
+        .bg-mod { background-color: var(--risk-mod-bg); }
+        .icon-mod { color: var(--risk-mod-text); background: rgba(255,255,255,0.5); width: 48px; height: 48px; border-radius: 50%; display:flex; align-items:center; justify-content:center;}
+        .btn-mod { color: var(--risk-mod-text); border-color: var(--risk-mod-text); }
+        .btn-mod:hover { background: var(--risk-mod-text); color: white; }
+
+        /* High Risk Styling */
+        .bg-high { background-color: var(--risk-high-bg); }
+        .icon-high { color: var(--risk-high-text); background: rgba(255,255,255,0.5); width: 48px; height: 48px; border-radius: 50%; display:flex; align-items:center; justify-content:center;}
+        .btn-high { color: var(--risk-high-text); border-color: var(--risk-high-text); }
+        .btn-high:hover { background: var(--risk-high-text); color: white; }
+
+        /* --- PREVENTION / CTA SECTION --- */
+        .cta-section {
+            padding: 5rem 0;
+            text-align: center;
+            background: white;
+        }
+
+        .main-cta-btn {
+            background-color: var(--accent-blue);
+            color: white;
+            font-size: 1.1rem;
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            border: none;
+            margin: 2rem 0;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .main-cta-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+        }
+
+        .disclaimer-box {
+            background-color: var(--bg-light);
+            border: 1px solid #e5e7eb;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: left;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        
+        .disclaimer-icon {
+            color: #f59e0b; /* Amber warning color */
+            flex-shrink: 0;
+        }
+
+        .disclaimer-content h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .disclaimer-content p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 2rem 0;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .made-with {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        @media (min-width: 768px) {
+            .footer-content {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        /* --- NEW ADDITIONS FOR ALERT AND UPLOAD/RESULT VIEWS --- */
+        
+        /* ALERT MODAL */
+        #alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 9999; /* Highest priority */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .alert-modal-box {
+            background: white;
+            padding: 40px;
+            border: 2px solid #dc2626; /* Red border */
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .alert-header {
+            color: #dc2626; /* Red */
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .alert-btn {
+            background-color: var(--accent-blue);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .alert-btn:hover { background-color: var(--primary-dark); }
+
+        /* VIEW TOGGLING */
+        .hidden { display: none !important; }
+
+        /* UPLOAD SECTION STYLES */
+        .upload-container {
+            max-width: 800px;
+            margin: 5rem auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .upload-box {
+            border: 3px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 40px;
+            margin: 30px 0;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover { border-color: var(--accent-blue); background: #f0f9ff; }
+
+        #imagePreview {
+            max-width: 300px;
+            max-height: 300px;
+            margin-top: 20px;
+            border-radius: 8px;
+            display: none; /* Hidden initially */
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* RESULT SECTION STYLES */
+        .result-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .result-images {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-img-box {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result-img-box img {
+            width: 100%;
+            border-radius: 6px;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-card {
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .detail-title {
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .detail-content {
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        /* Filter to simulate 'analysis' on the second image */
+        .analyzed-filter {
+            filter: contrast(1.2) brightness(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .result-images { grid-template-columns: 1fr; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="alert-overlay">
+        <div class="alert-modal-box">
+            <div class="alert-header">Important Alert</div>
+            <p style="font-size: 1.1rem; line-height: 1.8; color: #374151;">
+                This application is strictly for <strong>diabetic patients.</strong>
+            </p>
+            <p style="margin-top: 10px;">It does not replace medical consultation.</p>
+            <button class="alert-btn" onclick="closeAlert()">I Understand</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo" onclick="goHome()">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    CURIS
+                </div>
+                <div class="nav-links">
+                    <a href="#" onclick="goHome()">Home</a>
+                    <a href="#" onclick="goHome()">Features</a>
+                    <a href="#" onclick="goHome()">About</a>
+                </div>
+                <button class="btn-header" onclick="startProcess()">Get Started</button>
+            </nav>
+        </div>
+    </header>
+
+    <div id="home-view">
+        <section class="hero-section">
+            <div class="container">
+                <div class="tagline-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    AI-Powered Clinical Decision Support
+                </div>
+                <h1 class="hero-title">Predicting Diabetic Foot Ulcer Risk <span class="text-highlight">Before It Becomes Critical</span></h1>
+                <p class="hero-subtitle">Early detection saves limbs and lives. Our AI analyzes foot images to assess ulcer risk, empowering patients and healthcare workers with actionable insights.</p>
+                
+                <div class="hero-buttons">
+                    <button class="main-cta-btn" onclick="startProcess()">Check Foot Risk <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+                    <button class="secondary-btn" onclick="alert('Learn More clicked. Navigating to detailed information...')">Learn More</button>
+                </div>
+
+                <div class="hero-cards-grid">
+                    <div class="hero-card" onclick="cardClick('Early Detection Info')">
+                        <div class="hero-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="hero-card-content">
+                            <h3>Early Detection</h3>
+                            <p>Catch risks early</p>
+                        </div>
+                    </div>
+                    <div class="hero-card" onclick="cardClick('AI Accuracy Info')">
+                        <div class="hero-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div class="hero-card-content">
+                            <h3>AI Accuracy</h3>
+                            <p>Clinical-grade analysis</p>
+                        </div>
+                    </div>
+                    <div class="hero-card" onclick="cardClick('Patient Care Info')">
+                        <div class="hero-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        </div>
+                        <div class="hero-card-content">
+                            <h3>Patient Care</h3>
+                            <p>Reduce complications</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="container">
+                <div class="grid-4">
+                    <div class="card" onclick="startProcess()">
+                        <div class="icon-box icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                        <h3>Easy Image Upload</h3>
+                        <p>Simply upload a clear photo of the foot. Our system guides you for optimal image quality.</p>
+                    </div>
+
+                    <div class="card" onclick="startProcess()">
+                        <div class="icon-box icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        </div>
+                        <h3>Risk Assessment</h3>
+                        <p>AI analyzes the image and returns a risk level with confidence score in seconds.</p>
+                    </div>
+                    <div class="card" onclick="cardClick('Guidance')">
+                        <div class="icon-box icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </div>
+                        <h3>Actionable Guidance</h3>
+                        <p>Receive personalized recommendations based on your risk level and severity.</p>
+                    </div>
+                    <div class="card" onclick="cardClick('Visuals')">
+                        <div class="icon-box icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <h3>Visual Explanations</h3>
+                        <p>Optional Grad-CAM heatmaps show exactly what areas the AI identified as concerning.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="risk-section">
+            <div class="container">
+                <h2 class="section-title">Understanding Risk Levels</h2>
+                <div class="grid-3">
+                    <div class="risk-card bg-low">
+                        <div class="icon-low"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <h3>Low Risk</h3>
+                        <p>No immediate concerns detected. Continue routine foot care and regular check-ups.</p>
+                        <button class="risk-btn btn-low">Maintain daily foot hygiene</button>
+                    </div>
+                    <div class="risk-card bg-mod">
+                        <div class="icon-mod"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                        <h3>Moderate Risk</h3>
+                        <p>Some indicators require attention. Schedule a consultation with your healthcare provider.</p>
+                        <button class="risk-btn btn-mod">Consult a professional</button>
+                    </div>
+                    <div class="risk-card bg-high">
+                        <div class="icon-high"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                        <h3>High Risk</h3>
+                        <p>Urgent attention needed. Please seek immediate medical evaluation.</p>
+                        <button class="risk-btn btn-high">Seek immediate care</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <h2 class="section-title">Take the First Step Toward Prevention</h2>
+                <button class="main-cta-btn" onclick="startProcess()">Start Risk Assessment <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 8px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+            </div>
+        </section>
+    </div>
+
+    <div id="upload-view" class="hidden">
+        <div class="container">
+            <div class="upload-container">
+                <h2 class="section-title">Upload Foot Image</h2>
+                <p class="section-subtitle">Please ensure the photo is clear, well-lit, and focused on the affected area.</p>
+                
+                <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" style="margin-bottom: 15px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <p style="font-weight: 600; color: var(--text-main);">Click to select image</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light);">Supported formats: JPG, PNG</p>
+                    <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="handleImageUpload(event)">
+                </div>
+
+                <img id="imagePreview" alt="Preview">
+                
+                <br>
+                <button class="main-cta-btn" onclick="analyzeImage()">Analyze <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-view" class="hidden">
+        <div class="container">
+            <div class="result-container">
+                <h2 class="section-title" style="margin-bottom: 30px;">Assessment Result</h2>
+                
+                <div class="result-images">
+                    <div class="result-img-box">
+                        <p style="margin-bottom: 10px; font-weight: 600;">Uploaded Image</p>
+                        <img id="output-uploaded-img" src="" alt="Uploaded Foot">
+                    </div>
+                    <div class="result-img-box">
+                        <p style="margin-bottom: 10px; font-weight: 600;">Analyzed Image (AI Processed)</p>
+                        <img id="output-analyzed-img" src="" alt="AI Analysis" class="analyzed-filter">
+                    </div>
+                </div>
+
+                <div class="result-details">
+                    <div class="detail-card bg-mod">
+                        <div class="detail-title">Risk Stage</div>
+                        <div class="detail-content" style="color: var(--risk-mod-text); font-weight: 800; font-size: 1.5rem;">
+                            Stage 2: Moderate Risk
+                        </div>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">Early signs of ulceration detected.</p>
+                    </div>
+
+                    <div class="detail-card" style="background: #f0f9ff; border-color: #bae6fd;">
+                        <div class="detail-title" style="color: #0369a1;">Diet Recommendation</div>
+                        <div class="detail-content">
+                            <ul style="padding-left: 20px; font-size: 0.95rem;">
+                                <li>Control carbohydrate intake (complex carbs preferred).</li>
+                                <li>Increase Vitamin C and Zinc for wound healing.</li>
+                                <li>Stay hydrated (2-3 liters water daily).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="detail-card" style="background: #fff1f2; border-color: #fecdd3;">
+                        <div class="detail-title" style="color: #be123c;">Immediate Action</div>
+                        <div class="detail-content">
+                            <p style="font-size: 0.95rem;">Do not walk barefoot. Clean the area with mild saline. <br><strong>Schedule a podiatrist visit within 48 hours.</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 40px;">
+                    <button class="secondary-btn" onclick="startProcess()">Assess Another Image</button>
+                    <button class="main-cta-btn" onclick="goHome()">Back to Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="logo">CURIS</div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="made-with">Made with ❤️ for better health</div>
+        </div>
+    </footer>
+
+    <script>
+        // 1. Close Alert Modal
+        function closeAlert() {
+            document.getElementById('alert-overlay').style.display = 'none';
+        }
+
+        // 2. Navigation Logic
+        function goHome() {
+            document.getElementById('home-view').classList.remove('hidden');
+            document.getElementById('upload-view').classList.add('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function startProcess() {
+            // Requirement: "gives an alert after clicking"
+            alert("Starting Risk Assessment Module...");
+            
+            // Navigate to Upload Page
+            document.getElementById('home-view').classList.add('hidden');
+            document.getElementById('upload-view').classList.remove('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            window.scrollTo(0,0);
+        }
+
+        // 3. Handle Image Upload & Preview
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 4. Analyze & Show Results
+        function analyzeImage() {
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Please select an image to upload first.");
+                return;
+            }
+
+            // Simulate "Analyzing..."
+            const btn = document.querySelector('#upload-view .main-cta-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Analyzing...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                // Get the uploaded image source
+                const imgSrc = document.getElementById('imagePreview').src;
+                
+                // Set result images
+                document.getElementById('output-uploaded-img').src = imgSrc;
+                document.getElementById('output-analyzed-img').src = imgSrc; // CSS filter makes it look analyzed
+
+                // Switch views
+                document.getElementById('upload-view').classList.add('hidden');
+                document.getElementById('result-view').classList.remove('hidden');
+                
+                // Reset button for next time
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                window.scrollTo(0,0);
+
+            }, 1000); // 1 second delay for effect
+        }
+
+        // Feature card click stub
+        function cardClick(featureName) {
+            console.log("Clicked feature: " + featureName);
+            // alert("You clicked on: " + featureName); 
+            // Removed alert per new flow preference, but kept function structure
+        }
+    </script>
+</body>
+</html>
